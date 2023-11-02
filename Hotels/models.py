@@ -37,8 +37,14 @@ class country(models.Model):
     def __str__(self):
         return self.name
 
+class services_cat(models.Model):
+    name = models.CharField(max_length=20)
+    def __str__(self):
+        return self.name
+    
 
 class facilities(models.Model):
+    category = models.ManyToManyField(services_cat,max_length=30)
     name = models.CharField(max_length=100,unique=True)
     def __str__(self):
         return self.name
@@ -80,6 +86,12 @@ class bed_option(models.Model):
     def __str__(self):
         return self.name
 
+class faq(models.Model):
+    question = models.CharField(max_length=100)
+    answer = models.TextField(max_length=300)
+    def __str__(self):
+        return self.question
+
 class hotelroom(models.Model):
     room_cat = models.OneToOneField(room_cat, on_delete=models.CASCADE)
     price = models.PositiveIntegerField()
@@ -94,7 +106,7 @@ class hotelroom(models.Model):
     extra_fan = models.BooleanField(default=False)
     extra_bed = models.BooleanField(default=False)
     wifi = models.BooleanField(default=True)
-    furniture = models.ManyToManyField(furniture,null=True,blank=True)
+    furniture = models.ManyToManyField(furniture,blank=True)
     balcony = models.BooleanField(default=False)
     balcony_size = models.PositiveIntegerField()
     def __str__(self):
@@ -105,12 +117,15 @@ class check_in_rqm(models.Model):
     age = models.PositiveIntegerField(null=True,blank=True)
     documents = models.CharField(choices=doc_type,max_length=20,null=True,blank=True)
     extras = models.TextField(null=True,blank=True)
+    def __str__(self):
+        return self.payment
 
 class hotel(models.Model):
     unique_id = models.PositiveIntegerField(unique=True)
     vendor = models.ForeignKey(User,on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     slug = AutoSlugField(populate_from='name',unique=True)
+    image = models.ImageField(upload_to='hotels/',default='default/default.png')
     country = models.ForeignKey(country,on_delete=models.DO_NOTHING)
     state = models.CharField(max_length=50)
     city = models.CharField(max_length=50)
@@ -130,12 +145,12 @@ class hotel(models.Model):
     parking = models.CharField(choices=Prk_type,max_length=20)
     
     
-    check_in_rqm = models.OneToOneField(check_in_rqm,on_delete=models.CASCADE)
+    check_in_rqm = models.OneToOneField(check_in_rqm,on_delete=models.DO_NOTHING)
     policies = models.TextField()
-    # faq = models.ManyToManyField()
-    hotel_created_at = models.DateField()
+    faq = models.OneToOneField(faq,blank=True,null=True,on_delete=models.DO_NOTHING)
+    hotel_created_at = models.DateField(auto_now_add=True)
     created_at = models.DateTimeField( auto_now_add=True)
-    Updated_at = models.DateField(auto_now=False, auto_now_add=False)
+    Updated_at = models.DateField( auto_now_add=True)
     def __str__(self):
         return self.name
 
